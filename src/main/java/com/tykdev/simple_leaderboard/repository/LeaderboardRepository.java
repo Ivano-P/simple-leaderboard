@@ -11,6 +11,5 @@ public interface LeaderboardRepository extends JpaRepository<PlayerRecord, Integ
     List<PlayerRecord> findTop10ByOrderByHighScoreDesc();
     List<PlayerRecord> findAllByOrderByHighScoreDesc();
     List<PlayerRecord> findTop10ByOrderByHighLevelDesc();
-    Optional<PlayerRecord> findByPlayerUuid(UUID playerUuid);
     Optional<PlayerRecord> findByUsernameAndDiscriminator(String username, int discriminator);
 }

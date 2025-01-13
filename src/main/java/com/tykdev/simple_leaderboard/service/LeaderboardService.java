@@ -13,5 +13,6 @@ public interface LeaderboardService {
     List<PlayerRecordDto> getHighScoreLeaderboardDto();
     List<PlayerRecordDto> getHighLevelLeaderboardDto();
     PlayerRecordDto convertToDto(PlayerRecord playerRecord);
-
+    List<PlayerRecordDto> getTopTenHighScoreLeaderboardDto();
+    List<PlayerRecordDto> getTopTenHighLevelLeaderboardDto();
 }
