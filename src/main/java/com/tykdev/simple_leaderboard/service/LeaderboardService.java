@@ -15,4 +15,12 @@ public interface LeaderboardService {
     PlayerRecordDto convertToDto(PlayerRecord playerRecord);
     List<PlayerRecordDto> getTopTenHighScoreLeaderboardDto();
     List<PlayerRecordDto> getTopTenHighLevelLeaderboardDto();
+    List<PlayerRecord> getFriendsLeaderboard();
+    List<PlayerRecordDto> getFriendsLeaderboardDto();
+    PlayerRecord getPlayerRecord(String playerNameAndDiscriminator);
+    PlayerRecordDto getPlayerRecordDto(String playerNameAndDiscriminator);
+    PlayerRecordDto addPlayerRecord(PlayerRecordDto playerRecordDto);
+    String GetUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
+    int GetDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
+
 }

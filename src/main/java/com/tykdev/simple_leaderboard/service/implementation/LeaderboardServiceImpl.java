@@ -70,6 +70,48 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         return leaderboardDto;
     }
 
+    //TODO
+    @Override
+    public PlayerRecord getPlayerRecord(String playerNameAndDiscriminator) {
+        return null;
+    }
+
+    //TODO
+    @Override
+    public PlayerRecordDto getPlayerRecordDto(String playerNameAndDiscriminator) {
+        return null;
+    }
+
+    //TODO
+    @Override
+    public PlayerRecordDto addPlayerRecord(PlayerRecordDto playerRecordDto) {
+        return null;
+    }
+
+    //TODO
+    @Override
+    public String GetUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
+        return null;
+    }
+
+    @Override
+    public int GetDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
+        return 0;
+    }
+
+    //TODO
+    @Override
+    public List<PlayerRecord> getFriendsLeaderboard() {
+        return null;
+    }
+
+    //TODO
+    @Override
+    public List<PlayerRecordDto> getFriendsLeaderboardDto() {
+        return null;
+    }
+
+
     @Override
     public PlayerRecordDto convertToDto(PlayerRecord playerRecord) {
         return new PlayerRecordDto(
@@ -78,6 +120,5 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 playerRecord.getHighLevel()
         );
     }
-
 
 }
