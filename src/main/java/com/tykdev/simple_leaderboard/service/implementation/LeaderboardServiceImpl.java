@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LeaderboardServiceImpl implements LeaderboardService {
@@ -70,16 +71,21 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         return leaderboardDto;
     }
 
-    //TODO
     @Override
     public PlayerRecord getPlayerRecord(String playerNameAndDiscriminator) {
-        return null;
+        String username = getUsernameFromPlayerNameAndDiscriminator(playerNameAndDiscriminator);
+        int discriminator = getDiscriminatorFromPlayerNameAndDiscriminator(playerNameAndDiscriminator);
+        return leaderboardRepository.findByUsernameAndDiscriminator(
+                username,
+                discriminator)
+                .orElseThrow(() -> new RuntimeException("Player record not found for username: " + username +
+                " and discriminator: " + discriminator));
     }
 
-    //TODO
+    //This is called by controller, it calls getPlayerRecord and then converts it to DTO
     @Override
     public PlayerRecordDto getPlayerRecordDto(String playerNameAndDiscriminator) {
-        return null;
+        return convertToDto(getPlayerRecord(playerNameAndDiscriminator));
     }
 
     //TODO
@@ -88,15 +94,28 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         return null;
     }
 
-    //TODO
     @Override
-    public String GetUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
-        return null;
+    public String getUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
+        String[] parts = splitAndValidate(playerNameAndDiscriminator);
+        return parts[0]; // Return username
     }
 
     @Override
-    public int GetDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
-        return 0;
+    public int getDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
+        String[] parts = splitAndValidate(playerNameAndDiscriminator);
+        return Integer.parseInt(parts[1]); // Return discriminator
+    }
+
+    // Helper method to split and validate the input
+    private String[] splitAndValidate(String playerNameAndDiscriminator) {
+        if (playerNameAndDiscriminator == null || !playerNameAndDiscriminator.contains("#")) {
+            throw new IllegalArgumentException("Invalid format. Expected 'username#discriminator'.");
+        }
+        String[] parts = playerNameAndDiscriminator.split("#");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid format. Expected 'username#discriminator'.");
+        }
+        return parts;
     }
 
     //TODO

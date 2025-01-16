@@ -20,7 +20,7 @@ public interface LeaderboardService {
     PlayerRecord getPlayerRecord(String playerNameAndDiscriminator);
     PlayerRecordDto getPlayerRecordDto(String playerNameAndDiscriminator);
     PlayerRecordDto addPlayerRecord(PlayerRecordDto playerRecordDto);
-    String GetUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
-    int GetDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
+    String getUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
+    int getDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
 
 }
