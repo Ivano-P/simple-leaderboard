@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProfileLogger {
     Logger logger = LoggerFactory.getLogger(ProfileLogger.class);
+    
     @Value("${spring.profiles.active:default}")
     private String activeProfile;
 
