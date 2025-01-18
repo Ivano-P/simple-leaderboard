@@ -1,10 +1,8 @@
 package com.tykdev.simple_leaderboard.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.antlr.v4.runtime.misc.NotNull;
 
 @Data
 @NoArgsConstructor
@@ -30,6 +28,12 @@ public class PlayerRecord {
     private int highLevel;
 
     public PlayerRecord(String username) {
+        this.username = username;
+    }
+
+    public PlayerRecord(String username, int discriminator) {
+        this.username = username;
+        this.discriminator = discriminator;
     }
 
     public PlayerRecord(String username, int discriminator, int highScore, int highLevel) {

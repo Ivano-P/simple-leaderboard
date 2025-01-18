@@ -7,6 +7,8 @@ import com.tykdev.simple_leaderboard.model.PlayerRecord;
 import com.tykdev.simple_leaderboard.repository.DeletedLeaderboardRepository;
 import com.tykdev.simple_leaderboard.repository.LeaderboardRepository;
 import com.tykdev.simple_leaderboard.service.LeaderboardService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -16,7 +18,7 @@ import java.util.List;
 
 @Service
 public class LeaderboardServiceImpl implements LeaderboardService {
-
+    Logger logger = LoggerFactory.getLogger(LeaderboardServiceImpl.class);
     private final LeaderboardRepository leaderboardRepository;
     private final DeletedLeaderboardRepository deletedLeaderboardRepository;
 
@@ -79,6 +81,10 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
 
     private PlayerRecord getPlayerRecordByNameAndDiscriminator(String playerNameAndDiscriminator) {
+        if (playerNameAndDiscriminator == null || playerNameAndDiscriminator.isBlank()) {
+            throw new IllegalArgumentException("playerNameAndDiscriminator cannot be null or empty.");
+        }
+        playerNameAndDiscriminator = playerNameAndDiscriminator.trim(); // Trim the input
         String username = getUsernameFromPlayerNameAndDiscriminator(playerNameAndDiscriminator);
         int discriminator = getDiscriminatorFromPlayerNameAndDiscriminator(playerNameAndDiscriminator);
         return leaderboardRepository.findByUsernameAndDiscriminator(username, discriminator)
@@ -105,19 +111,49 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
     // Helper method to split and validate the input
     private String[] splitAndValidate(String playerNameAndDiscriminator) {
-        if (playerNameAndDiscriminator == null || !playerNameAndDiscriminator.contains("#")) {
-            throw new IllegalArgumentException("Invalid format. Expected 'username#discriminator'.");
+        if (playerNameAndDiscriminator == null || !playerNameAndDiscriminator.contains("~")) {
+            throw new IllegalArgumentException("Invalid format. Expected 'username~discriminator'.");
         }
-        String[] parts = playerNameAndDiscriminator.split("#");
+        playerNameAndDiscriminator = playerNameAndDiscriminator.trim(); // Trim input
+        String[] parts = playerNameAndDiscriminator.split("~");
         if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid format. Expected 'username#discriminator'.");
+            throw new IllegalArgumentException("Invalid format. Expected 'username~discriminator'.");
         }
         return parts;
     }
 
     @Override
     public PlayerRecordDto registerPlayer(String username) {
-        return convertToDto(saveNewPlayerRecord(username));
+        logger.info("Registering new player: " + username);
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username cannot be null or empty.");
+        }
+        // Trim the username to remove whitespace or newline characters
+        username = username.trim();
+
+        int discriminator = 1;
+        boolean isUnique = false;
+
+        // Try generating a unique discriminator
+        while (!isUnique) {
+            isUnique = !leaderboardRepository.existsByUsernameAndDiscriminator(username, discriminator);
+
+            if (!isUnique) {
+                discriminator++;
+                // Fail-safe to prevent infinite loop
+                if (discriminator > 9999) {
+                    throw new RuntimeException("No available discriminators for username: " + username);
+                }
+            }
+        }
+
+
+        // Create a new player record
+        PlayerRecord newPlayer = new PlayerRecord(username, discriminator);
+
+        // Save and return as DTO
+        PlayerRecord savedPlayer = leaderboardRepository.save(newPlayer);
+        return convertToDto(savedPlayer);
     }
 
     private PlayerRecord saveNewPlayerRecord(String username) {
@@ -125,6 +161,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
     }
 
     public PlayerRecordDto updatePlayerRecordDto(PlayerRecordDto playerRecordDto) {
+
         // Fetch the current record
         PlayerRecord currentRecord = getPlayerRecordByNameAndDiscriminator(playerRecordDto.getPlayerNameAndDiscriminator());
 
@@ -172,7 +209,7 @@ public class LeaderboardServiceImpl implements LeaderboardService {
     @Override
     public PlayerRecordDto convertToDto(PlayerRecord playerRecord) {
         return new PlayerRecordDto(
-                playerRecord.getUsername() + "#" + playerRecord.getDiscriminator(),
+                playerRecord.getUsername() + "~" + playerRecord.getDiscriminator(),
                 playerRecord.getHighScore(),
                 playerRecord.getHighLevel()
         );
