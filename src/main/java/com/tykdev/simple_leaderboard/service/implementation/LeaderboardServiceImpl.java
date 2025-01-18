@@ -2,11 +2,15 @@ package com.tykdev.simple_leaderboard.service.implementation;
 
 import com.tykdev.simple_leaderboard.dto.PlayerRecordDto;
 import com.tykdev.simple_leaderboard.exception.PlayerNotFoundException;
+import com.tykdev.simple_leaderboard.model.DeletedPlayerRecord;
 import com.tykdev.simple_leaderboard.model.PlayerRecord;
+import com.tykdev.simple_leaderboard.repository.DeletedLeaderboardRepository;
 import com.tykdev.simple_leaderboard.repository.LeaderboardRepository;
 import com.tykdev.simple_leaderboard.service.LeaderboardService;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +18,13 @@ import java.util.List;
 public class LeaderboardServiceImpl implements LeaderboardService {
 
     private final LeaderboardRepository leaderboardRepository;
+    private final DeletedLeaderboardRepository deletedLeaderboardRepository;
 
-    public LeaderboardServiceImpl(LeaderboardRepository leaderboardRepository) {
+    public LeaderboardServiceImpl(LeaderboardRepository leaderboardRepository, DeletedLeaderboardRepository deletedLeaderboardRepository) {
         this.leaderboardRepository = leaderboardRepository;
+        this.deletedLeaderboardRepository = deletedLeaderboardRepository;
     }
+
 
 
     private List<PlayerRecord> getHighScoreLeaderboard() {
@@ -140,12 +147,25 @@ public class LeaderboardServiceImpl implements LeaderboardService {
     }
 
     @Override
-    public void deletePlayerRecordDto(String playerNameAndDiscriminator) {
-        // Fetch the record
-        PlayerRecord playerRecord = getPlayerRecordByNameAndDiscriminator(playerNameAndDiscriminator);
+    public void deletePlayerRecordDto(String usernameAndDiscriminator) {
+        PlayerRecord playerRecord = getPlayerRecordByNameAndDiscriminator(usernameAndDiscriminator);
 
-        // Delete the record
+        // Move the record to the deleted table
+        deletedLeaderboardRepository.save(convertToDeletedRecord(playerRecord));
+
+        // Delete from the main leaderboard table
         leaderboardRepository.delete(playerRecord);
+    }
+
+    private DeletedPlayerRecord convertToDeletedRecord(PlayerRecord playerRecord) {
+        DeletedPlayerRecord deletedRecord = new DeletedPlayerRecord();
+        deletedRecord.setId(playerRecord.getId());
+        deletedRecord.setUsername(playerRecord.getUsername());
+        deletedRecord.setDiscriminator(playerRecord.getDiscriminator());
+        deletedRecord.setHighScore(playerRecord.getHighScore());
+        deletedRecord.setHighLevel(playerRecord.getHighLevel());
+        deletedRecord.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
+        return deletedRecord;
     }
 
 
@@ -157,19 +177,5 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 playerRecord.getHighLevel()
         );
     }
-
-    /*
-
-    //TODO
-    private List<PlayerRecord> getFriendsLeaderboard() {
-        return null;
-    }
-
-    //TODO
-    @Override
-    public List<PlayerRecordDto> getFriendsLeaderboardDto() {
-        return null;
-    }
-    */
 
 }

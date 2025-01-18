@@ -54,5 +54,11 @@ public class LeaderboardController {
         return leaderboardService.updatePlayerRecordDto(playerRecordDto);
     }
 
+    @DeleteMapping("/delete/{usernameAndDiscriminator}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePlayerRecord(@PathVariable String usernameAndDiscriminator) {
+        leaderboardService.deletePlayerRecordDto(usernameAndDiscriminator);
+    }
+
 
 }
