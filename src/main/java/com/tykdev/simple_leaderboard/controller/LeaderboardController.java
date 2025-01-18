@@ -42,10 +42,16 @@ public class LeaderboardController {
         return leaderboardService.getPlayerRecordDto(usernameAndDiscriminator);
     }
 
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public PlayerRecordDto registerPlayer(@RequestBody String username) {
+        return leaderboardService.registerPlayer(username);
+    }
+
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.CREATED)
     public PlayerRecordDto addPlayerRecord(@RequestBody PlayerRecordDto playerRecordDto) {
-        return leaderboardService.addPlayerRecord(playerRecordDto);
+        return leaderboardService.updatePlayerRecordDto(playerRecordDto);
     }
 
 

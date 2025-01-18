@@ -1,9 +1,13 @@
 package com.tykdev.simple_leaderboard.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.antlr.v4.runtime.misc.NotNull;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "leaderboard", uniqueConstraints = @UniqueConstraint(columnNames = {"username", "discriminator"}))
 public class PlayerRecord {
@@ -24,5 +28,15 @@ public class PlayerRecord {
 
     @Column(name = "high_level", nullable = false)
     private int highLevel;
+
+    public PlayerRecord(String username) {
+    }
+
+    public PlayerRecord(String username, int discriminator, int highScore, int highLevel) {
+        this.username = username;
+        this.discriminator = discriminator;
+        this.highScore = highScore;
+        this.highLevel = highLevel;
+    }
 
 }

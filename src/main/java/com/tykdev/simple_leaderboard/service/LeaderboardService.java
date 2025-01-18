@@ -8,19 +8,17 @@ import java.util.List;
 
 @Service
 public interface LeaderboardService {
-    List<PlayerRecord> getHighScoreLeaderboard();
-    List<PlayerRecord> getHighLevelLeaderboard();
     List<PlayerRecordDto> getHighScoreLeaderboardDto();
     List<PlayerRecordDto> getHighLevelLeaderboardDto();
     PlayerRecordDto convertToDto(PlayerRecord playerRecord);
     List<PlayerRecordDto> getTopTenHighScoreLeaderboardDto();
     List<PlayerRecordDto> getTopTenHighLevelLeaderboardDto();
-    List<PlayerRecord> getFriendsLeaderboard();
     List<PlayerRecordDto> getFriendsLeaderboardDto();
-    PlayerRecord getPlayerRecord(String playerNameAndDiscriminator);
     PlayerRecordDto getPlayerRecordDto(String playerNameAndDiscriminator);
-    PlayerRecordDto addPlayerRecord(PlayerRecordDto playerRecordDto);
-    String getUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
-    int getDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator);
+    PlayerRecordDto updatePlayerRecordDto(PlayerRecordDto playerRecordDto);
+    PlayerRecordDto registerPlayer(String username);
+    void deletePlayerRecordDto(String playerNameAndDiscriminator);
+
+
 
 }

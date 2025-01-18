@@ -1,6 +1,7 @@
 package com.tykdev.simple_leaderboard.service.implementation;
 
 import com.tykdev.simple_leaderboard.dto.PlayerRecordDto;
+import com.tykdev.simple_leaderboard.exception.PlayerNotFoundException;
 import com.tykdev.simple_leaderboard.model.PlayerRecord;
 import com.tykdev.simple_leaderboard.repository.LeaderboardRepository;
 import com.tykdev.simple_leaderboard.service.LeaderboardService;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class LeaderboardServiceImpl implements LeaderboardService {
@@ -19,13 +19,12 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         this.leaderboardRepository = leaderboardRepository;
     }
 
-    @Override
-    public List<PlayerRecord> getHighScoreLeaderboard() {
+
+    private List<PlayerRecord> getHighScoreLeaderboard() {
         return leaderboardRepository.findAllByOrderByHighScoreDesc();
     }
 
-    @Override
-    public List<PlayerRecord> getHighLevelLeaderboard() {
+    private List<PlayerRecord> getHighLevelLeaderboard() {
         return leaderboardRepository.findTop10ByOrderByHighLevelDesc();
     }
 
@@ -71,37 +70,28 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         return leaderboardDto;
     }
 
-    @Override
-    public PlayerRecord getPlayerRecord(String playerNameAndDiscriminator) {
+
+    private PlayerRecord getPlayerRecordByNameAndDiscriminator(String playerNameAndDiscriminator) {
         String username = getUsernameFromPlayerNameAndDiscriminator(playerNameAndDiscriminator);
         int discriminator = getDiscriminatorFromPlayerNameAndDiscriminator(playerNameAndDiscriminator);
-        return leaderboardRepository.findByUsernameAndDiscriminator(
-                username,
-                discriminator)
-                .orElseThrow(() -> new RuntimeException("Player record not found for username: " + username +
-                " and discriminator: " + discriminator));
+        return leaderboardRepository.findByUsernameAndDiscriminator(username, discriminator)
+                .orElseThrow(() -> new PlayerNotFoundException("Player record not found for username: "
+                        + username + " and discriminator: " + discriminator));
     }
 
     //This is called by controller, it calls getPlayerRecord and then converts it to DTO
     @Override
     public PlayerRecordDto getPlayerRecordDto(String playerNameAndDiscriminator) {
-        return convertToDto(getPlayerRecord(playerNameAndDiscriminator));
+        return convertToDto(getPlayerRecordByNameAndDiscriminator(playerNameAndDiscriminator));
     }
 
-    //TODO
-    @Override
-    public PlayerRecordDto addPlayerRecord(PlayerRecordDto playerRecordDto) {
-        return null;
-    }
 
-    @Override
-    public String getUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
+    private String getUsernameFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
         String[] parts = splitAndValidate(playerNameAndDiscriminator);
         return parts[0]; // Return username
     }
 
-    @Override
-    public int getDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
+    private int getDiscriminatorFromPlayerNameAndDiscriminator(String playerNameAndDiscriminator) {
         String[] parts = splitAndValidate(playerNameAndDiscriminator);
         return Integer.parseInt(parts[1]); // Return discriminator
     }
@@ -118,16 +108,44 @@ public class LeaderboardServiceImpl implements LeaderboardService {
         return parts;
     }
 
-    //TODO
     @Override
-    public List<PlayerRecord> getFriendsLeaderboard() {
-        return null;
+    public PlayerRecordDto registerPlayer(String username) {
+        return convertToDto(saveNewPlayerRecord(username));
     }
 
-    //TODO
+    private PlayerRecord saveNewPlayerRecord(String username) {
+        return leaderboardRepository.save(new PlayerRecord(username));
+    }
+
+    public PlayerRecordDto updatePlayerRecordDto(PlayerRecordDto playerRecordDto) {
+        // Fetch the current record
+        PlayerRecord currentRecord = getPlayerRecordByNameAndDiscriminator(playerRecordDto.getPlayerNameAndDiscriminator());
+
+        // Check if an update is needed
+        if ( checkIfShouldUpdateRecord(playerRecordDto, currentRecord)) {
+            // Update the fields
+            currentRecord.setHighScore(playerRecordDto.getHighScore());
+            currentRecord.setHighLevel(playerRecordDto.getHighLevel());
+
+            // Save and return updated record
+            return convertToDto(leaderboardRepository.save(currentRecord));
+        }
+
+        // Return the current record if no update is performed
+        return convertToDto(currentRecord);
+    }
+    private boolean checkIfShouldUpdateRecord(PlayerRecordDto playerRecordDto, PlayerRecord currentRecord) {
+        return playerRecordDto.getHighScore() > currentRecord.getHighScore() ||
+                playerRecordDto.getHighLevel() > currentRecord.getHighLevel();
+    }
+
     @Override
-    public List<PlayerRecordDto> getFriendsLeaderboardDto() {
-        return null;
+    public void deletePlayerRecordDto(String playerNameAndDiscriminator) {
+        // Fetch the record
+        PlayerRecord playerRecord = getPlayerRecordByNameAndDiscriminator(playerNameAndDiscriminator);
+
+        // Delete the record
+        leaderboardRepository.delete(playerRecord);
     }
 
 
@@ -139,5 +157,19 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                 playerRecord.getHighLevel()
         );
     }
+
+    /*
+
+    //TODO
+    private List<PlayerRecord> getFriendsLeaderboard() {
+        return null;
+    }
+
+    //TODO
+    @Override
+    public List<PlayerRecordDto> getFriendsLeaderboardDto() {
+        return null;
+    }
+    */
 
 }
