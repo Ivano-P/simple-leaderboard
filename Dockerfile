@@ -1,14 +1,9 @@
-# Use the official Eclipse Temurin image for Java 21
-FROM openjdk:21-jdk-slim
-
-# Set the working directory inside the container
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
+COPY . .
+RUN ./mvnw clean package -DskipTests
 
-# Copy the JAR file into the container
-COPY target/fyhoj-leaderboard.jar app.jar
-
-ENV JAVA_OPTS="-Dspring.profiles.active=prod"
-
-EXPOSE 8080
-
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
